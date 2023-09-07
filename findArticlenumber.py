@@ -12,19 +12,24 @@ def find_article_number(pdf_file, article_number) -> dict | None:
     :param article_number: the article number you looking for
     :return: a dict with billing-number and date or none if the searched article number not in PDF
     """
-    reader = PdfReader(pdf_file)
-    for page in reader.pages:
-        text = page.extract_text()
-        text_splitted = text.split("\n")
+    try:
+        reader = PdfReader(pdf_file)
+        for page in reader.pages:
+            text = page.extract_text()
+            text_splitted = text.split("\n")
 
-        items = {}
-        if article_number in text_splitted[38].split(" ")[0]:
-            items["billing_number"] = text_splitted[11].split(" ")[1]
-            items["date"] = text_splitted[13]
+            items = {}
+            if article_number in text_splitted[38].split(" ")[0]:
+                items["billing_number"] = text_splitted[11].split(" ")[1]
+                items["date"] = text_splitted[13]
+                items["file"] = pdf_file.rsplit("/", 1)[1]
 
-            return items
+                return items
         return None
-
+    except Exception as e:
+        print(f"Kann diese Datei nicht lesen {pdf_file}")
+        print(e)
+        return
 
 def main():
     parser = argparse.ArgumentParser(description="Suchen Sie nach Artikelnummern in PDF-Rechnungen.")
@@ -51,7 +56,7 @@ def main():
                 found_bills.append(scanned_pdf)
 
     for items in found_bills:
-        print(f"Rechnungsnummer {items['billing_number']} vom {items['date']}")
+        print(f"Rechnungsnummer {items['billing_number']} vom {items['date']} Dateinmae: {items['file']}")
 
 
 if __name__ == "__main__":
